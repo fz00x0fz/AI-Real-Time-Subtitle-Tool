@@ -1,5 +1,11 @@
 # AI Real-time Subtitle Tool
 
+---
+
+**语言**: 中文 | [English](README_EN.md)
+
+---
+
 A desktop AI floating window tool for Windows that can capture system audio in real-time and convert it to text subtitles using AI models.
 
 ## 🔗 Quick Navigation

@@ -1,5 +1,11 @@
 # AI实时字幕工具 (AI Real-time Subtitle Tool)
 
+---
+
+**语言**: 中文 | [English](README_EN.md)
+
+---
+
 一个支持在Windows上运行的桌面AI浮窗工具，可以实时捕获系统音频并通过AI大模型转换为文字字幕显示在桌面上。
 
 ## 🔗 快速导航
