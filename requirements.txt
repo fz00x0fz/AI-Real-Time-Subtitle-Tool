@@ -1,0 +1,24 @@
+# UI框架 (必需)
+PyQt5>=5.15.0
+
+# 音频处理 (必需)
+sounddevice>=0.4.6
+numpy>=1.24.0,<2.0.0
+
+# 配置管理 (必需)
+python-dotenv>=1.0.0
+
+# HTTP请求 (必需)
+requests>=2.31.0
+
+# AI服务 (按需安装)
+openai>=1.0.0
+azure-cognitiveservices-speech>=1.34.0
+
+# 音频处理辅助 (可选)
+pydub>=0.25.1
+
+# PyAudio (可选，如果sounddevice不工作)
+# pyaudio>=0.2.11
+# 注意: Windows上安装PyAudio可能需要使用pipwin或预编译wheel
+# pip install pipwin && pipwin install pyaudio
