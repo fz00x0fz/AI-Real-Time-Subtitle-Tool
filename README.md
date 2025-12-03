@@ -19,7 +19,8 @@
 - 🔧 **[如何打包](HOW_TO_BUILD.md)** - 3步完成打包
 - 📦 **[打包选项](BUILD_OPTIONS.md)** - 标准版 vs 本地模型版
 - 🔌 **[运行时安装](RUNTIME_INSTALL_GUIDE.md)** - 按需安装本地模型（推荐）
-- 📚 **[完整指南](COMPLETE_GUIDE.md)** - 所有文档导航
+- � **[调试指南](docs/DEBUG_GUIDE.md)** - 解决Shell窗口无法终止问题
+- �📚 **[完整指南](COMPLETE_GUIDE.md)** - 所有文档导航
 
 ## 📸 项目演示
 
@@ -103,10 +104,18 @@ AZURE_SPEECH_REGION=eastus
 ```env
 AI_SERVICE=aliyun
 ALIYUN_API_KEY=your_aliyun_api_key_here
+# 支持的模型: paraformer-realtime-v2, fun-asr-realtime-2025-11-07
 ALIYUN_MODEL=paraformer-realtime-v2
 ```
 
-详细配置请参考：[阿里云百炼配置指南](docs/aliyun_setup.md)
+**注意**: 需要安装DashScope SDK:
+```bash
+pip install dashscope
+```
+
+详细配置请参考：
+- [阿里云百炼配置指南](docs/aliyun_setup.md)
+- [DashScope SDK更新说明](docs/ALIYUN_DASHSCOPE_UPDATE.md) - 最新SDK使用方法
 
 #### 使用本地Whisper模型
 

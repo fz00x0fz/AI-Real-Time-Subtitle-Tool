@@ -14,6 +14,7 @@ requests>=2.31.0
 # AI服务 (按需安装)
 openai>=1.0.0
 azure-cognitiveservices-speech>=1.34.0
+dashscope>=1.14.0
 
 # 音频处理辅助 (可选)
 pydub>=0.25.1

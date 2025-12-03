@@ -21,8 +21,7 @@ class Config:
     
     # Aliyun Bailian Configuration
     ALIYUN_API_KEY = os.getenv('ALIYUN_API_KEY', '')
-    ALIYUN_APP_ID = os.getenv('ALIYUN_APP_ID', '')
-    ALIYUN_ENDPOINT = os.getenv('ALIYUN_ENDPOINT', 'https://dashscope.aliyuncs.com/api/v1/services/audio/asr')
+    # 支持的模型: paraformer-realtime-v2, fun-asr-realtime-2025-11-07
     ALIYUN_MODEL = os.getenv('ALIYUN_MODEL', 'paraformer-realtime-v2')
     
     # Audio Settings

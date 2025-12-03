@@ -19,6 +19,7 @@ A desktop AI floating window tool for Windows that can capture system audio in r
 - 🔧 **[How to Build](docs/HOW_TO_BUILD.md)** - Build in 3 steps
 - 📦 **[Build Options](docs/BUILD_OPTIONS.md)** - Standard vs Local Model
 - 🔌 **[Runtime Installation](docs/RUNTIME_INSTALL_GUIDE.md)** - Install local model on-demand (Recommended)
+- 🐛 **[Debug Guide](docs/DEBUG_GUIDE.md)** - Fix shell window termination issues
 - 📚 **[Complete Guide](docs/COMPLETE_GUIDE.md)** - All documentation
 
 ## 📸 Project Demo
@@ -103,10 +104,18 @@ AZURE_SPEECH_REGION=eastus
 ```env
 AI_SERVICE=aliyun
 ALIYUN_API_KEY=your_aliyun_api_key_here
+# Supported models: paraformer-realtime-v2, fun-asr-realtime-2025-11-07
 ALIYUN_MODEL=paraformer-realtime-v2
 ```
 
-For detailed configuration, see: [Aliyun Bailian Setup Guide](docs/aliyun_setup.md)
+**Note**: DashScope SDK installation required:
+```bash
+pip install dashscope
+```
+
+For detailed configuration, see:
+- [Aliyun Bailian Setup Guide](docs/aliyun_setup.md)
+- [DashScope SDK Update Guide](docs/ALIYUN_DASHSCOPE_UPDATE.md) - Latest SDK usage
 
 #### Using Local Whisper Model
 

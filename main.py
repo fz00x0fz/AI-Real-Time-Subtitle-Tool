@@ -1,8 +1,10 @@
 import sys
 import threading
 import time
+import signal
+import atexit
 from PyQt5.QtWidgets import QApplication, QMessageBox
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal, QTimer
 
 from config import Config
 from audio_capture import AudioCapture
@@ -79,10 +81,24 @@ class AISubtitleApp:
         self.audio_capture = None
         self.transcription_service = None
         self.transcription_worker = None
+        self._cleanup_done = False
         
         # Connect signals
         self.window.start_clicked.connect(self.start_capture)
         self.window.stop_clicked.connect(self.stop_capture)
+        self.app.aboutToQuit.connect(self.cleanup)
+        
+        # Setup signal handlers for graceful shutdown
+        signal.signal(signal.SIGINT, self._signal_handler)
+        signal.signal(signal.SIGTERM, self._signal_handler)
+        
+        # Register cleanup at exit
+        atexit.register(self.cleanup)
+        
+        # Setup timer to handle Ctrl+C in console
+        self.timer = QTimer()
+        self.timer.timeout.connect(lambda: None)
+        self.timer.start(500)
         
     def initialize(self):
         """Initialize services"""
@@ -168,23 +184,63 @@ class AISubtitleApp:
         self.window.show()
         return self.app.exec_()
         
+    def _signal_handler(self, signum, frame):
+        """Handle system signals for graceful shutdown"""
+        print(f"\nReceived signal {signum}, shutting down...")
+        self.cleanup()
+        sys.exit(0)
+    
     def cleanup(self):
         """Cleanup resources"""
+        if self._cleanup_done:
+            return
+        
+        self._cleanup_done = True
         print("\nCleaning up...")
-        self.stop_capture()
+        
+        try:
+            # Stop timer
+            if hasattr(self, 'timer'):
+                self.timer.stop()
+            
+            # Stop capture
+            self.stop_capture()
+            
+            # Force cleanup of audio stream
+            if self.audio_capture and hasattr(self.audio_capture, 'stream'):
+                if self.audio_capture.stream:
+                    try:
+                        self.audio_capture.stream.abort()
+                    except:
+                        pass
+            
+            # Give threads time to finish
+            time.sleep(0.5)
+            
+            print("Cleanup complete")
+        except Exception as e:
+            print(f"Error during cleanup: {e}")
 
 
 def main():
     """Main entry point"""
-    app = AISubtitleApp()
+    app = None
+    exit_code = 0
     
     try:
+        app = AISubtitleApp()
         exit_code = app.run()
     except KeyboardInterrupt:
         print("\nInterrupted by user")
         exit_code = 0
+    except Exception as e:
+        print(f"\nUnexpected error: {e}")
+        exit_code = 1
     finally:
-        app.cleanup()
+        if app:
+            app.cleanup()
+        # Force exit to ensure shell terminates
+        print("Exiting...")
         
     sys.exit(exit_code)
 

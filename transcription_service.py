@@ -116,122 +116,141 @@ class AzureTranscriptionService(TranscriptionService):
 
 
 class AliyunTranscriptionService(TranscriptionService):
-    """Aliyun Bailian (DashScope) transcription service"""
+    """Aliyun Bailian (DashScope) transcription service
+    
+    基于官方示例: example/dashscope/call_dashscope_paraformer-realtime-v2.md
+    """
     
     def __init__(self):
-        import requests
-        self.api_key = Config.ALIYUN_API_KEY
-        self.app_id = Config.ALIYUN_APP_ID
-        self.endpoint = Config.ALIYUN_ENDPOINT
-        self.model = Config.ALIYUN_MODEL
-        self.session = requests.Session()
+        try:
+            import dashscope
+            from dashscope.audio.asr import Recognition
+            from http import HTTPStatus
+            
+            # 设置API Key（参考官方示例）
+            dashscope.api_key = Config.ALIYUN_API_KEY
+            
+            self.model = Config.ALIYUN_MODEL
+            self.sample_rate = Config.SAMPLE_RATE
+            self.Recognition = Recognition
+            self.HTTPStatus = HTTPStatus
+            self.dashscope = dashscope
+            
+            # 性能指标记录
+            self._first_call = True
+            self._total_calls = 0
+            self._success_calls = 0
+            
+            print(f"[Aliyun] Initialized with model: {self.model}")
+            print(f"[Aliyun] Sample rate: {self.sample_rate} Hz")
+            
+        except ImportError as e:
+            print("=" * 60)
+            print("[ERROR] dashscope SDK未安装")
+            print("=" * 60)
+            print()
+            print("请安装阿里云DashScope SDK:")
+            print("  pip install dashscope")
+            print()
+            print("=" * 60)
+            raise
         
     def transcribe(self, audio_data: np.ndarray, sample_rate: int) -> str:
-        """Transcribe audio using Aliyun Bailian API"""
+        """Transcribe audio using Aliyun DashScope SDK
+        
+        参考官方示例实现，支持以下特性：
+        - paraformer-realtime-v2: 支持language_hints（中英文混合）
+        - fun-asr-realtime-2025-11-07: 最新模型
+        """
+        self._total_calls += 1
+        
         try:
-            import requests
-            import base64
+            import tempfile
+            import os
             
             # Convert to WAV bytes
             wav_bytes = self.audio_to_wav_bytes(audio_data, sample_rate)
             
-            # Encode audio to base64
-            audio_base64 = base64.b64encode(wav_bytes).decode('utf-8')
+            # 创建临时文件保存音频数据
+            # 使用with语句确保文件正确关闭
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
+                temp_file.write(wav_bytes)
+                temp_file_path = temp_file.name
             
-            # Prepare request headers - 使用正确的API格式
-            headers = {
-                'Authorization': f'Bearer {self.api_key}',
-                'Content-Type': 'application/json'
-            }
-            
-            # Prepare request body - 使用阿里云百炼的标准格式
-            payload = {
-                'model': self.model,
-                'input': {
-                    'audio_data': audio_base64,
-                    'format': 'wav',
-                    'sample_rate': sample_rate,
-                    'channel': 1
-                },
-                'parameters': {
-                    'format': 'pcm'
-                }
-            }
-            
-            # If app_id is provided, include it in headers
-            if self.app_id:
-                headers['X-DashScope-AppId'] = self.app_id
-            
-            # Make API request
-            response = self.session.post(
-                self.endpoint,
-                headers=headers,
-                json=payload,
-                timeout=30
-            )
-            
-            # Check response
-            if response.status_code == 200:
-                result = response.json()
+            try:
+                # 根据模型选择是否使用language_hints
+                # 参考官方示例："language_hints"只支持paraformer-realtime-v2模型
+                if self.model == 'paraformer-realtime-v2':
+                    recognition = self.Recognition(
+                        model=self.model,
+                        format='wav',
+                        sample_rate=sample_rate,
+                        language_hints=['zh', 'en'],  # 中英文混合识别
+                        callback=None
+                    )
+                else:
+                    # 其他模型（如fun-asr-realtime-2025-11-07）不使用language_hints
+                    recognition = self.Recognition(
+                        model=self.model,
+                        format='wav',
+                        sample_rate=sample_rate,
+                        callback=None
+                    )
                 
-                # Debug: print response structure (first time only)
-                if not hasattr(self, '_logged_response'):
-                    print(f"[DEBUG] Aliyun API response structure: {result}")
-                    self._logged_response = True
+                # 调用识别API（参考官方示例）
+                result = recognition.call(temp_file_path)
                 
-                # Parse result based on API response structure
-                if 'output' in result:
-                    output = result['output']
+                # 检查识别结果（参考官方示例的错误处理）
+                if result.status_code == self.HTTPStatus.OK:
+                    self._success_calls += 1
                     
-                    # Method 1: Direct text field
-                    if 'text' in output:
-                        text = output['text'].strip()
-                        if text:
-                            return text
+                    # 获取识别文本（使用官方推荐的get_sentence()方法）
+                    text = result.get_sentence()
                     
-                    # Method 2: Sentence field (single or multiple)
-                    if 'sentence' in output:
-                        sentences = output['sentence']
-                        if isinstance(sentences, list):
-                            text = ' '.join([s.get('text', '') for s in sentences]).strip()
-                            if text:
-                                return text
-                        elif isinstance(sentences, dict):
-                            text = sentences.get('text', '').strip()
-                            if text:
-                                return text
+                    # 打印性能指标（参考官方示例的Metric输出）
+                    if self._first_call:
+                        print(
+                            f'[Aliyun Metric] requestId: {recognition.get_last_request_id()}, '
+                            f'first package delay: {recognition.get_first_package_delay()}ms, '
+                            f'last package delay: {recognition.get_last_package_delay()}ms'
+                        )
+                        self._first_call = False
                     
-                    # Method 3: Results array
-                    if 'results' in output:
-                        results = output['results']
-                        if isinstance(results, list) and len(results) > 0:
-                            text = results[0].get('text', '').strip()
-                            if text:
-                                return text
+                    # 返回识别结果
+                    if text:
+                        return text.strip()
+                    else:
+                        # 无识别结果（可能是静音或噪音）
+                        return ""
+                else:
+                    # 识别失败，输出错误信息（参考官方示例）
+                    print(f'[Aliyun Error] {result.status_code}: {result.message}')
+                    return ""
                     
-                    # Method 4: Transcription field
-                    if 'transcription' in output:
-                        text = output['transcription'].strip()
-                        if text:
-                            return text
-                
-                # If output not found, check top-level fields
-                if 'text' in result:
-                    return result['text'].strip()
-                
-                # No text found
-                print(f"[WARNING] No text found in Aliyun response: {result}")
-                return ""
-            else:
-                error_msg = f"Aliyun API error: {response.status_code} - {response.text}"
-                print(error_msg)
-                return ""
+            finally:
+                # 删除临时文件，确保资源清理
+                try:
+                    os.unlink(temp_file_path)
+                except Exception as cleanup_error:
+                    # 忽略删除文件时的错误
+                    pass
                 
         except Exception as e:
-            print(f"Aliyun transcription error: {e}")
+            print(f"[Aliyun] Transcription error: {e}")
             import traceback
             traceback.print_exc()
             return ""
+    
+    def get_stats(self):
+        """获取统计信息"""
+        if self._total_calls > 0:
+            success_rate = (self._success_calls / self._total_calls) * 100
+            return {
+                'total_calls': self._total_calls,
+                'success_calls': self._success_calls,
+                'success_rate': f'{success_rate:.1f}%'
+            }
+        return None
 
 
 class LocalWhisperService(TranscriptionService):
