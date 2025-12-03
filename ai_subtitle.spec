@@ -15,7 +15,8 @@ a = Analysis(
         ('.env.example', '.'),
         ('.env.aliyun.example', '.'),
         ('README.md', '.'),
-        ('QUICKSTART_ALIYUN.md', '.'),
+        ('README_EN.md', '.'),
+        ('LICENSE', '.'),
         ('docs', 'docs'),
     ],
     hiddenimports=[

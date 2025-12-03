@@ -573,14 +573,25 @@ class SettingsWindow(QDialog):
             if not hasattr(self, 'install_whisper_btn'):
                 return
             
-            # 尝试导入whisper
+            # 尝试导入whisper（静默模式，不显示错误）
             try:
-                import whisper
-                self.whisper_status.setText("✅ 本地模型已安装")
+                # 临时重定向stderr，避免显示错误消息
+                import io
+                import contextlib
+                
+                with contextlib.redirect_stderr(io.StringIO()):
+                    import whisper
+                
+                self.whisper_status.setText("[OK] 本地模型已安装")
                 self.whisper_status.setStyleSheet("color: green;")
                 self.install_whisper_btn.setText("重新安装")
             except ImportError:
-                self.whisper_status.setText("⚠️ 本地模型未安装")
+                self.whisper_status.setText("[!] 本地模型未安装")
+                self.whisper_status.setStyleSheet("color: orange;")
+                self.install_whisper_btn.setText("安装本地模型")
+            except Exception:
+                # 其他错误也视为未安装
+                self.whisper_status.setText("[!] 本地模型未安装")
                 self.whisper_status.setStyleSheet("color: orange;")
                 self.install_whisper_btn.setText("安装本地模型")
         except Exception as e:

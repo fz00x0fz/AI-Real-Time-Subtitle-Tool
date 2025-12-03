@@ -4,18 +4,42 @@ PyInstaller配置文件 - 包含本地Whisper模型
 用于将AI实时字幕工具打包为Windows可执行文件（包含本地Whisper支持）
 """
 
+import os
+import sys
+from pathlib import Path
+
 block_cipher = None
+
+# 获取torch库路径
+def get_torch_binaries():
+    """获取PyTorch的DLL文件"""
+    binaries = []
+    try:
+        import torch
+        torch_dir = Path(torch.__file__).parent
+        lib_dir = torch_dir / 'lib'
+        
+        if lib_dir.exists():
+            # 添加所有DLL文件
+            for dll in lib_dir.glob('*.dll'):
+                binaries.append((str(dll), 'torch/lib'))
+            print(f"找到 {len(binaries)} 个PyTorch DLL文件")
+    except Exception as e:
+        print(f"警告: 无法获取PyTorch DLL文件: {e}")
+    
+    return binaries
 
 # 分析依赖
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=[],
+    binaries=get_torch_binaries(),
     datas=[
         ('.env.example', '.'),
         ('.env.aliyun.example', '.'),
         ('README.md', '.'),
-        ('QUICKSTART_ALIYUN.md', '.'),
+        ('README_EN.md', '.'),
+        ('LICENSE', '.'),
         ('docs', 'docs'),
     ],
     hiddenimports=[
@@ -87,7 +111,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,  # 禁用UPX，避免DLL损坏
     console=True,  # 显示控制台窗口，方便查看日志
     disable_windowed_traceback=False,
     argv_emulation=False,
@@ -104,7 +128,7 @@ coll = COLLECT(
     a.zipfiles,
     a.datas,
     strip=False,
-    upx=True,
+    upx=False,  # 禁用UPX，避免DLL损坏
     upx_exclude=[],
     name='AI实时字幕_本地模型版',
 )

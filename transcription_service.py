@@ -238,16 +238,39 @@ class LocalWhisperService(TranscriptionService):
     """Local Whisper model transcription (requires whisper package)"""
     
     def __init__(self):
+        self.model = None
         try:
             import whisper
             print("Loading local Whisper model (this may take a while)...")
             self.model = whisper.load_model("base")  # Options: tiny, base, small, medium, large
             print("Whisper model loaded successfully")
-        except ImportError:
-            raise ImportError("Please install openai-whisper: pip install openai-whisper")
+        except ImportError as e:
+            print("=" * 60)
+            print("[WARNING] 本地Whisper模型未安装")
+            print("=" * 60)
+            print()
+            print("请选择以下方式之一安装:")
+            print()
+            print("方式1: 通过图形界面安装（推荐）")
+            print("  1. 点击主窗口的⚙按钮打开配置")
+            print("  2. 点击'安装本地模型'按钮")
+            print("  3. 等待安装完成")
+            print()
+            print("方式2: 手动安装")
+            print("  pip install openai-whisper")
+            print()
+            print("=" * 60)
+            # 不抛出异常，让程序继续运行
+        except Exception as e:
+            print(f"加载Whisper模型时出错: {e}")
+            print("请尝试重新安装: pip install openai-whisper")
     
     def transcribe(self, audio_data: np.ndarray, sample_rate: int) -> str:
         """Transcribe audio using local Whisper model"""
+        # 检查模型是否已加载
+        if self.model is None:
+            return "[本地模型未安装，请在配置中安装]"
+        
         try:
             # Whisper expects float32 audio normalized to [-1, 1]
             if audio_data.dtype != np.float32:

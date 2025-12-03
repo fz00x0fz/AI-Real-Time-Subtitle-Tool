@@ -91,18 +91,18 @@ class AISubtitleApp:
             
             # Validate configuration
             Config.validate()
-            print("✓ Configuration validated")
+            print("[OK] Configuration validated")
             
             # Initialize audio capture
             self.audio_capture = AudioCapture()
-            print("✓ Audio capture initialized")
+            print("[OK] Audio capture initialized")
             
             # List available audio devices
             self.audio_capture.list_devices()
             
             # Initialize transcription service
             self.transcription_service = create_transcription_service()
-            print("✓ Transcription service initialized")
+            print("[OK] Transcription service initialized")
             
             # Initialize transcription worker
             self.transcription_worker = TranscriptionWorker(
@@ -112,13 +112,13 @@ class AISubtitleApp:
             self.transcription_worker.subtitle_updated.connect(
                 self.window.update_subtitle
             )
-            print("✓ Transcription worker initialized")
+            print("[OK] Transcription worker initialized")
             
             print("\n=== Initialization Complete ===\n")
             return True
             
         except Exception as e:
-            error_msg = f"初始化失败: {str(e)}\n\n请检查配置文件和API密钥。"
+            error_msg = f"Initialization failed: {str(e)}\n\nPlease check your configuration file and API key."
             print(f"Error: {error_msg}")
             QMessageBox.critical(None, "初始化错误", error_msg)
             return False

@@ -135,7 +135,8 @@ echo 4. 实时字幕显示
 echo.
 echo ## 技术支持
 echo - 查看 README.md 获取详细文档
-echo - 查看 QUICKSTART_ALIYUN.md 快速配置
+echo - 查看 docs\QUICKSTART_ALIYUN.md 快速配置
+echo - 查看 docs 目录获取更多文档
 echo.
 echo ## 系统要求
 echo - Windows 10/11

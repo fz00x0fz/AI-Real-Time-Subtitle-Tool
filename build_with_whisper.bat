@@ -168,27 +168,17 @@ if exist "README.md" (
     echo [完成] 已复制 README.md
 )
 
-if exist "QUICKSTART_ALIYUN.md" (
-    copy /y "QUICKSTART_ALIYUN.md" "%DIST_DIR%\" >nul
-    echo [完成] 已复制 QUICKSTART_ALIYUN.md
+if exist "README_EN.md" (
+    copy /y "README_EN.md" "%DIST_DIR%\" >nul
+    echo [完成] 已复制 README_EN.md
 )
 
-if exist "SETTINGS_GUIDE.md" (
-    copy /y "SETTINGS_GUIDE.md" "%DIST_DIR%\" >nul
-    echo [完成] 已复制 SETTINGS_GUIDE.md
+if exist "LICENSE" (
+    copy /y "LICENSE" "%DIST_DIR%\" >nul
+    echo [完成] 已复制 LICENSE
 )
 
-if exist "AUDIO_SETUP.md" (
-    copy /y "AUDIO_SETUP.md" "%DIST_DIR%\" >nul
-    echo [完成] 已复制 AUDIO_SETUP.md
-)
-
-if exist "EXTERNAL_AUDIO_SETUP.md" (
-    copy /y "EXTERNAL_AUDIO_SETUP.md" "%DIST_DIR%\" >nul
-    echo [完成] 已复制 EXTERNAL_AUDIO_SETUP.md
-)
-
-REM 复制docs目录
+REM 复制docs目录（包含所有文档）
 if exist "docs" (
     if not exist "%DIST_DIR%\docs" mkdir "%DIST_DIR%\docs"
     xcopy /y /e /i "docs" "%DIST_DIR%\docs" >nul

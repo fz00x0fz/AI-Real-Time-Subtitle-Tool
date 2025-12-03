@@ -59,7 +59,12 @@ echo [5/5] 复制配置文件到发布目录...
 copy .env.example "dist\AI实时字幕\" >nul
 copy .env.aliyun.example "dist\AI实时字幕\" >nul
 copy README.md "dist\AI实时字幕\" >nul
-copy QUICKSTART_ALIYUN.md "dist\AI实时字幕\" >nul
+copy README_EN.md "dist\AI实时字幕\" >nul
+copy LICENSE "dist\AI实时字幕\" >nul
+if exist "docs" (
+    xcopy /y /e /i "docs" "dist\AI实时字幕\docs" >nul
+    echo [完成] 已复制 docs 目录
+)
 
 REM 创建启动说明
 echo 创建使用说明...
@@ -78,7 +83,7 @@ echo.
 echo 3. 阿里云快速配置：
 echo    - 复制 .env.aliyun.example 为 .env
 echo    - 填入阿里云API密钥
-echo    - 查看 QUICKSTART_ALIYUN.md 获取详细步骤
+echo    - 查看 docs\QUICKSTART_ALIYUN.md 获取详细步骤
 echo.
 echo 4. 启用音频捕获：
 echo    - 在Windows声音设置中启用"立体声混音"

@@ -39,39 +39,51 @@ class WhisperInstallThread(QThread):
             self.progress.emit("正在安装openai-whisper...")
             self.progress.emit("这可能需要几分钟时间，请耐心等待...")
             
-            # 使用gbk编码处理Windows控制台输出
-            import locale
-            encoding = locale.getpreferredencoding() or 'utf-8'
-            
+            # 不使用encoding参数，以字节模式读取，避免编码问题
             process = subprocess.Popen(
                 [sys.executable, "-m", "pip", "install", "openai-whisper"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
-                encoding=encoding,
-                errors='replace'  # 替换无法解码的字符
+                # 不指定encoding，以字节模式读取
             )
             
             # 实时输出安装信息
             try:
-                for line in process.stdout:
+                for line in iter(process.stdout.readline, b''):
+                    if not line:
+                        break
                     try:
-                        self.progress.emit(line.strip())
+                        # 手动解码，使用多种编码尝试
+                        decoded_line = None
+                        for enc in ['utf-8', 'gbk', 'gb2312', 'ascii']:
+                            try:
+                                decoded_line = line.decode(enc, errors='ignore').strip()
+                                if decoded_line:
+                                    break
+                            except:
+                                continue
+                        
+                        if decoded_line:
+                            # 再次确保可以用GBK编码（用于PyQt信号）
+                            safe_line = decoded_line.encode('ascii', errors='ignore').decode('ascii')
+                            if safe_line.strip():
+                                self.progress.emit(safe_line)
                     except Exception:
                         # 忽略单行输出错误
                         pass
             except Exception as e:
-                self.progress.emit(f"读取输出时出错: {e}")
+                self.progress.emit(f"读取输出时出错: {str(e)}")
             
             process.wait()
             
             if process.returncode == 0:
-                self.progress.emit("\n✅ 安装成功！")
+                self.progress.emit("\n[OK] 安装成功！")
                 self.progress.emit("正在验证安装...")
                 
                 # 验证安装
                 try:
                     import whisper
-                    self.progress.emit("✅ Whisper模块验证成功")
+                    self.progress.emit("[OK] Whisper模块验证成功")
                     self.finished.emit(True, "安装完成！重启应用后即可使用本地Whisper模型。")
                 except ImportError as e:
                     self.finished.emit(False, f"安装完成但验证失败: {e}")
@@ -79,7 +91,7 @@ class WhisperInstallThread(QThread):
                 self.finished.emit(False, "安装失败，请查看详细信息")
                 
         except Exception as e:
-            self.progress.emit(f"\n❌ 错误: {str(e)}")
+            self.progress.emit(f"\n[ERROR] 错误: {str(e)}")
             self.finished.emit(False, f"安装失败: {str(e)}")
 
 
@@ -199,11 +211,23 @@ class WhisperInstallerDialog(QDialog):
     
     def on_progress(self, message):
         """更新进度"""
-        self.log_text.append(message)
-        # 自动滚动到底部
-        self.log_text.verticalScrollBar().setValue(
-            self.log_text.verticalScrollBar().maximum()
-        )
+        try:
+            # 只保留ASCII字符，彻底避免编码问题
+            safe_message = str(message)
+            
+            # 转换为纯ASCII
+            ascii_message = safe_message.encode('ascii', errors='ignore').decode('ascii').strip()
+            
+            # 如果清理后为空，跳过
+            if ascii_message:
+                self.log_text.append(ascii_message)
+                # 自动滚动到底部
+                self.log_text.verticalScrollBar().setValue(
+                    self.log_text.verticalScrollBar().maximum()
+                )
+        except Exception:
+            # 静默失败
+            pass
     
     def on_finished(self, success, message):
         """安装完成"""
