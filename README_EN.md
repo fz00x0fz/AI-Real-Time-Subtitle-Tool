@@ -21,6 +21,10 @@ A desktop AI floating window tool for Windows that can capture system audio in r
 - 🔌 **[Runtime Installation](docs/RUNTIME_INSTALL_GUIDE.md)** - Install local model on-demand (Recommended)
 - 📚 **[Complete Guide](docs/COMPLETE_GUIDE.md)** - All documentation
 
+## 📸 Project Demo
+
+![Project Demo](image/sample.png)
+
 ## ✨ Features
 
 - 🎙️ **Real-time Audio Capture**: Capture Windows system audio (WASAPI Loopback)

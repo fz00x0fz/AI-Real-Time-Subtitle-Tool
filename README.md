@@ -21,6 +21,10 @@
 - 🔌 **[运行时安装](RUNTIME_INSTALL_GUIDE.md)** - 按需安装本地模型（推荐）
 - 📚 **[完整指南](COMPLETE_GUIDE.md)** - 所有文档导航
 
+## 📸 项目演示
+
+![项目演示示例](image/sample.png)
+
 ## ✨ 功能特性
 
 - 🎙️ **实时音频捕获**: 支持捕获Windows系统播放的音频（WASAPI Loopback）
